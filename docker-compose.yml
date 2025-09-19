@@ -1,0 +1,84 @@
+version: '3.8'
+
+services:
+  # Development service with hot reload
+  redscan-dev:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: development
+    ports:
+      - "5173:5173"
+    volumes:
+      - .:/app
+      - /app/node_modules
+    environment:
+      - NODE_ENV=development
+      - VITE_API_URL=http://localhost:3001
+      - VITE_BASE44_API_URL=${VITE_BASE44_API_URL:-https://api.base44.com}
+      - VITE_APP_ENV=development
+    networks:
+      - redscan-network
+    stdin_open: true
+    tty: true
+    restart: unless-stopped
+
+  # Production service
+  redscan-prod:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: production
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+      - VITE_API_URL=${VITE_API_URL:-https://api.redscan.com}
+      - VITE_BASE44_API_URL=${VITE_BASE44_API_URL:-https://api.base44.com}
+      - VITE_APP_ENV=production
+    networks:
+      - redscan-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:3000/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  # Nginx reverse proxy (optional)
+  nginx:
+    image: nginx:alpine
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./ssl:/etc/nginx/ssl:ro
+    depends_on:
+      - redscan-prod
+    networks:
+      - redscan-network
+    restart: unless-stopped
+    profiles:
+      - production
+
+  # Mock API service for development (optional)
+  mock-api:
+    image: mockoon/cli:latest
+    ports:
+      - "3001:3001"
+    volumes:
+      - ./mock-api:/data
+    command: ["--data", "/data/mock-api.json", "--port", "3001"]
+    networks:
+      - redscan-network
+    profiles:
+      - development
+
+networks:
+  redscan-network:
+    driver: bridge
+
+volumes:
+  node_modules:
