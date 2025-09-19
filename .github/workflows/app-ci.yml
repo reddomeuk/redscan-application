@@ -1,0 +1,55 @@
+name: Application CI/CD
+
+on:
+  push:
+    branches: [ main, develop ]
+    paths:
+      - 'src/**'
+      - 'modules/**'
+      - 'shared/**'
+      - 'package.json'
+      - 'vite.config.js'
+  pull_request:
+    branches: [ main, develop ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+      - run: npm ci
+      - run: npm run test
+      - run: npm run lint
+      - run: npm run build
+
+  build-and-push:
+    needs: test
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v5
+        with:
+          push: true
+          tags: redscan.azurecr.io/redscan-app:${{ github.sha }}
+
+  notify-platform:
+    needs: build-and-push
+    runs-on: ubuntu-latest
+    steps:
+      - name: Notify Platform Team
+        uses: peter-evans/repository-dispatch@v2
+        with:
+          token: ${{ secrets.PLATFORM_REPO_TOKEN }}
+          repository: redscan/redscan-platform
+          event-type: app-release
+          client-payload: |
+            {
+              "version": "${{ github.sha }}",
+              "environment": "staging"
+            }

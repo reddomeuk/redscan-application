@@ -1,0 +1,54 @@
+import './App.css'
+import Pages from "@/pages/index.jsx"
+import { Toaster } from "@/components/ui/toaster"
+import ErrorBoundary from "@/components/common/ErrorBoundary"
+import StoreProvider from "@/stores/StoreProvider"
+import { Toaster as SonnerToaster } from 'sonner'
+import { useEffect } from 'react'
+
+// Initialize client-side security
+if (typeof window !== 'undefined') {
+  import('@/security/ClientSecurity').then(({ default: getSecurityManager }) => {
+    getSecurityManager();
+  });
+}
+
+function App() {
+  useEffect(() => {
+    // Additional security initialization
+    const initSecurity = async () => {
+      try {
+        const { default: getSecurityManager } = await import('@/security/ClientSecurity');
+        const securityManager = getSecurityManager();
+        
+        // Perform integrity check
+        if (!securityManager.checkIntegrity()) {
+          console.error('Security integrity check failed');
+        }
+      } catch (error) {
+        console.error('Failed to initialize security:', error);
+      }
+    };
+
+    initSecurity();
+  }, []);
+
+  return (
+    <ErrorBoundary>
+      <StoreProvider>
+        <Pages />
+        <Toaster />
+        <SonnerToaster 
+          position="top-right"
+          theme="dark"
+          richColors
+          closeButton
+          expand={false}
+          duration={4000}
+        />
+      </StoreProvider>
+    </ErrorBoundary>
+  )
+}
+
+export default App 
