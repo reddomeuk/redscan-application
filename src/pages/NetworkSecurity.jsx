@@ -28,6 +28,7 @@ import {
   Database
 } from 'lucide-react';
 import networkIntegrationEngine from '../services/NetworkIntegrationEngine';
+import { NetworkDevice, NetworkPolicy } from '../api/entities';
 import NetworkTopology from '../components/network/NetworkTopology';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';

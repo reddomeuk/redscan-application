@@ -153,6 +153,30 @@ export const M365PostureProfile = base44.entities.M365PostureProfile;
 
 export const M365PostureRun = base44.entities.M365PostureRun;
 
+// Network Security Entities
+export const NetworkDevice = base44.entities.NetworkDevice;
+
+export const NetworkPolicy = base44.entities.NetworkPolicy;
+
+export const NetworkConnection = base44.entities.NetworkConnection;
+
+export const NetworkScanResult = base44.entities.NetworkScanResult;
+
+// Partner Program Entities  
+export const PartnerOrganization = base44.entities.PartnerOrganization;
+
+export const PartnerEngagement = base44.entities.PartnerEngagement;
+
+export const PartnerContact = base44.entities.PartnerContact;
+
+export const PartnerSession = base44.entities.PartnerSession;
+
+export const PartnerAccessLog = base44.entities.PartnerAccessLog;
+
+export const PartnerVetting = base44.entities.PartnerVetting;
+
+export const PartnerCertification = base44.entities.PartnerCertification;
+
 
 
 // auth sdk:
