@@ -45,11 +45,35 @@ jobs:
       - name: Notify Platform Team
         uses: peter-evans/repository-dispatch@v2
         with:
-          token: ${{ secrets.PLATFORM_REPO_TOKEN }}
-          repository: redscan/redscan-platform
+          token: ${{ secrets.CROSS_REPO_TOKEN }}
+          repository: reddomeuk/redscan-platform
           event-type: app-release
           client-payload: |
             {
               "version": "${{ github.sha }}",
-              "environment": "staging"
+              "environment": "staging",
+              "repository": "${{ github.repository }}",
+              "branch": "${{ github.ref_name }}",
+              "commit_message": "${{ github.event.head_commit.message }}",
+              "author": "${{ github.actor }}"
+            }
+
+  notify-documentation:
+    needs: build-and-push
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Notify Documentation Team
+        uses: peter-evans/repository-dispatch@v2
+        with:
+          token: ${{ secrets.CROSS_REPO_TOKEN }}
+          repository: reddomeuk/redscan-documentation
+          event-type: app-release
+          client-payload: |
+            {
+              "version": "${{ github.sha }}",
+              "environment": "production",
+              "repository": "${{ github.repository }}",
+              "branch": "${{ github.ref_name }}",
+              "release_notes": "New application release ${{ github.sha }}"
             }
